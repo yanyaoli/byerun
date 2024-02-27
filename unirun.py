@@ -8,7 +8,6 @@ from tkinter import messagebox
 import base64
 import json
 import threading
-import os
 
 
 class Icon(object):
@@ -26,12 +25,12 @@ def load_info_thread():
     threading.Thread(target=load_info).start()
 
 root = tk.Tk()
-root.title("UNIXRUN")
+root.title("校园跑助手")
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 window_width = 410
-window_height = 490
+window_height = 450
 position_top = int(screen_height / 2 - window_height / 2)
 position_right = int(screen_width / 2 - window_width / 2)
 root.geometry(f"{window_width}x{window_height}+{position_right}+{position_top}")
@@ -39,46 +38,42 @@ root.geometry(f"{window_width}x{window_height}+{position_right}+{position_top}")
 root.resizable(False, False)
 
 style = ttk.Style()
-style.theme_use("clam")
+style.theme_use('clam')
 
 default_font = ("思源黑体 CN Heavy", 12)
 result_font = ("思源黑体 CN Heavy", 16)
-button_font = ("思源黑体 CN Heavy", 10, "bold")
-title_font = ("Terminal", 20)
+title_font = ('思源黑体 CN Heavy', 30, 'bold')
+button_font = ("思源黑体 CN Heavy", 12, 'bold')
 bg_color = "white"
 fg_color = "black"
-button_color = "#FF5F01"
-button_font_color = "#f0f0f0"
-result_font_color = "black"
-result_bg_color = "#f0f0f0"
+button_bg_color = "#FF5F01"
+button_fg_color = "white"
 
-style.configure('TButton', font=button_font, foreground=button_font_color, background=button_color, borderwidth=0,
-                relief='flat')
+style.configure('TButton', font=button_font, foreground=button_fg_color, background=button_bg_color, relief='flat')
 
 root.configure(bg=bg_color)
 root.iconbitmap('tmp.ico')
-
 
 # 登录窗口
 def show_login_window():
     login_window = tk.Toplevel(root, bg=bg_color)
     login_screen_width = login_window.winfo_screenwidth()
     login_screen_height = login_window.winfo_screenheight()
-    login_window_width = 210
-    login_window_height = 150
+    login_window_width = 300
+    login_window_height = 200
     login_position_top = int(login_screen_height / 2 - login_window_height / 2)
     login_position_right = int(login_screen_width / 2 - login_window_width / 2)
     login_window.geometry(f"{login_window_width}x{login_window_height}+{login_position_right}+{login_position_top}")
     login_window.resizable(False, False)
     login_window.iconbitmap('tmp.ico')
 
-    login_title_label = tk.Label(login_window, text="用户登录", font=title_font, bg=bg_color, fg=fg_color)
-    login_title_label.pack()
+    login_title_label = tk.Label(login_window,text="账号登录", font=title_font, bg=bg_color, fg="#FF5F01")
+    login_title_label.pack(padx=10, pady=10)
 
-    phone_entry = tk.Entry(login_window)
+    phone_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
     phone_entry.pack(padx=5, pady=5)
 
-    password_entry = tk.Entry(login_window)
+    password_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
     password_entry.pack(padx=5, pady=5)
 
     def clear_placeholder(event):
@@ -88,7 +83,7 @@ def show_login_window():
         if event.widget.get() == '':
             event.widget.insert(0, event.widget.placeholder)
 
-    phone_entry.placeholder = "请输入手机号"
+    phone_entry.placeholder = "请输入手机号码"
     phone_entry.insert(0, phone_entry.placeholder)
     phone_entry.bind("<FocusIn>", clear_placeholder)
     phone_entry.bind("<FocusOut>", add_placeholder)
@@ -103,20 +98,18 @@ def show_login_window():
         password = password_entry.get()
         threading.Thread(target=login, args=(phone, password)).start()
         if login(phone, password):
-            messagebox.showinfo("登录成功", "欢迎回来！")
             login_window.destroy()
             load_info_thread()
             return True
         else:
-            messagebox.showerror("登录失败", "登录失败，请检查手机号或者密码是否正确。")
+            messagebox.showerror("校园跑助手", "登录失败，请检查手机号和密码是否正确")
             return False
 
-    login_button = tk.Button(login_window, text="登录", bg=button_color, font=button_font, fg=button_font_color,
-                             command=run_login)
-    login_button.pack()
+    login_button = ttk.Button(login_window, text="登录", command=run_login, style='TButton')
+    login_button.pack(padx=5, pady=10)
 
 def toggle_login():
-    if login_status.get() == "登录":
+    if login_status.get() == "立即登录":
         show_login_window()
     else:
         logout_thread()
@@ -124,16 +117,10 @@ def toggle_login():
 def logout():
     with open('user_data.json', 'w') as f:
         json.dump({}, f)
-    load_info_thread()
-
-
-# 加载用户数据
-def load_info():
     if check_login_status() == False:
-        notice = "未登录"
-        userInfo.set(f'{notice}')
-        userJoinNum.set('')
-        login_status.set("登录")
+        userInfo.set('用户未登录')
+        login_status.set("立即登录")
+        userJoinNum.set('账号已退出\n请重新登录')
     else:
         data = load_data()
         studentName = data.get('studentName')
@@ -142,57 +129,91 @@ def load_info():
         token = load_data().get('token')
         user_join_num = get_join_num(token)
         userJoinNum.set(f'{user_join_num}')
-        login_status.set("注销")
+        login_status.set("退出登录")
 
 # 新增跑步记录
 def post_new_run_record():
+    result_text.config(state="normal")
+    result_text.delete(1.0, tk.END)
     runDistance = int(run_distance_entry.get())
     runTime = int(run_time_entry.get())
     map_choice = getMapChoice()
     if runDistance <= 0 or runTime <= 0:
         result_text.insert(tk.END, "请输入有效的跑步距离和时间。\n")
+        result_text.config(state="disabled")
         return
     try:
         result = new_run_record(runDistance, runTime, map_choice)
         result_text.insert(tk.END, result)
         load_info_thread()
+        result_text.config(state="disabled")
     except ValueError as e:
         result_text.insert(tk.END, f"运行时发生错误：{e}\n")
+        result_text.config(state="disabled")
+
+def show_about_info(event):
+    about_info_window = tk.Toplevel(root, bg=bg_color)
+    about_info_window.title("校园跑助手")
+    about_info_screen_width = about_info_window.winfo_screenwidth()
+    about_info_screen_height = about_info_window.winfo_screenheight()
+    about_info_window_width = 410
+    about_info_window_height = 150
+    about_info_position_top = int(about_info_screen_height / 2 - about_info_window_height / 2)
+    about_info_position_right = int(about_info_screen_width / 2 - about_info_window_width / 2)
+    about_info_window.geometry(f"{about_info_window_width}x{about_info_window_height}+{about_info_position_right}+{about_info_position_top}")
+    about_info_window.resizable(False, False)
+    about_info_window.iconbitmap('tmp.ico')
+
+    about_info_label = tk.Label(about_info_window, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
+    about_info_label.pack(padx=5, pady=5)
+
+    about_info_text = tk.Text(about_info_window, height=4, width=40, font=('思源黑体', 16), fg=fg_color, relief="solid", bd=0)
+    about_info_text.pack(padx=10, pady=5)
+    about_info_text.insert(tk.END, "UNIRUN·校园跑助手\n""Developer: yanyaoli\n""Repo: github.com/yanyaoli/unirun")
+    about_info_text.config(state="disabled")
+
+label_title = tk.Label(root, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
+label_title.bind("<Button-1>", show_about_info)
+label_title.grid(row=0, column=0, padx=10, pady=10)
 
 
-label_title = tk.Label(root, text="UNIXRUN", font=title_font, bg=bg_color, fg=fg_color)
-label_title.grid(row=0, column=0, padx=5, pady=5)
+# 加载用户数据
+def load_info():
+    if check_login_status() == False:
+        userInfo.set('用户未登录')
+        login_status.set("立即登录")
+        userJoinNum.set('数据加载失败\n请检查账号状态')
+    else:
+        data = load_data()
+        studentName = data.get('studentName')
+        userInfo.set(f'{studentName}')
 
-# 用户信息框
-frame_user_info = tk.Frame(root, bg=bg_color)
-frame_user_info.grid(row=1, column=0, padx=5, pady=5)
+        token = load_data().get('token')
+        user_join_num = get_join_num(token)
+        userJoinNum.set(f'{user_join_num}')
+        login_status.set("退出登录")
 
-userInfo = tk.StringVar()
-userJoinNum = tk.StringVar()
+userInfo = tk.StringVar(value="正在加载")
+user_info_label = tk.Label(root, textvariable=userInfo, font=default_font, bg=bg_color, fg=fg_color)
+user_info_label.grid(row=1, column=0, padx=5)
 
-user_info_label = tk.Label(frame_user_info, textvariable=userInfo, font=default_font, bg=bg_color, fg=fg_color)
-user_info_label.pack(side=tk.LEFT, padx=5, pady=5)
+userJoinNum = tk.StringVar(value="正在加载\n......")
+user_join_num_label = tk.Label(root, textvariable=userJoinNum, font=default_font, bg=bg_color, fg=fg_color)
+user_join_num_label.grid(row=2, column=0, padx=5, pady=5)
 
-frame_user_join_num = tk.Frame(root, bg=bg_color)
-frame_user_join_num.grid(row=2, column=0, padx=5)
+login_status = tk.StringVar(value="立即登录")
+login_button = tk.Button(root, textvariable=login_status, bg=button_bg_color, fg=button_fg_color, font=('思源黑体', 10), command=toggle_login, relief='flat')
+login_button.grid(row=3, column=0, padx=5)
 
-user_join_num_label = tk.Label(frame_user_join_num, textvariable=userJoinNum, font=default_font, bg=bg_color,
-                               fg=fg_color)
-user_join_num_label.pack(side=tk.LEFT, padx=5)
-
-login_status = tk.StringVar()
-login_status.set(load_info_thread())
-login_button = ttk.Button(frame_user_info, textvariable=login_status, width=5, command=toggle_login)
-login_button.pack(side=tk.LEFT, padx=5, pady=5)
 
 # 地图选择
-frame_map = tk.Frame(root, bg=bg_color)
-frame_map.grid(row=3, column=0, padx=5)
+map_frame = tk.Frame(root, bg=bg_color)
+map_frame.grid(row=4, column=0, padx=5)
 
-label_map = tk.Label(frame_map, text="地图选择:", font=default_font, bg=bg_color, fg=fg_color)
-label_map.pack(side=tk.LEFT, padx=5)
+map_label = tk.Label(map_frame, text="地图选择:", font=default_font, bg=bg_color, fg=fg_color)
+map_label.pack(side=tk.LEFT, padx=5)
 
-map_option_menu = ttk.Combobox(frame_map, width=10, font=default_font, state='readonly')
+map_option_menu = ttk.Combobox(map_frame, width=10, font=default_font, state='readonly')
 map_option_menu.pack(side=tk.LEFT, padx=5, pady=5)
 
 map_option_menu['value'] = ('航空港', '龙泉驿')
@@ -208,48 +229,36 @@ def getMapChoice():
     else:
         return "龙泉驿"
 
-default_running_time = tk.StringVar()
-default_running_distance = tk.StringVar()
+default_run_time = tk.StringVar(value='59')
+default_run_distance = tk.StringVar(value='4999')
 
 # 跑步距离输入框
-frame_distance = tk.Frame(root, bg=bg_color)
-frame_distance.grid(row=4, column=0, padx=5, pady=5)
+run_distance_frame = tk.Frame(root, bg=bg_color)
+run_distance_frame.grid(row=5, column=0, padx=5, pady=3)
 
-label_distance = tk.Label(frame_distance, text="跑步里程 (米MI):", font=default_font, bg=bg_color, fg=fg_color)
-label_distance.pack(side=tk.LEFT, padx=5, pady=5)
+distance_label = tk.Label(run_distance_frame, text="跑步里程 ( 米 ):", font=default_font, bg=bg_color, fg=fg_color)
+distance_label.pack(side=tk.LEFT, padx=5, pady=3)
 
-run_distance_entry = ttk.Spinbox(frame_distance, width=5, textvariable=default_running_distance, font=default_font)
-run_distance_entry.pack(side=tk.LEFT, padx=5)
-default_running_distance.set('4999')
+run_distance_entry = ttk.Spinbox(run_distance_frame, width=5, textvariable=default_run_distance, font=default_font, from_=1, to=5000, increment=99)
+run_distance_entry.pack(side=tk.LEFT, padx=3)
 
 # 跑步时间输入框
-frame_time = tk.Frame(root, bg=bg_color)
-frame_time.grid(row=5, column=0, padx=5)
+time_frame = tk.Frame(root, bg=bg_color)
+time_frame.grid(row=6, column=0, padx=5, pady=3)
 
-label_time = tk.Label(frame_time, text="跑步时长 (分钟):", font=default_font, bg=bg_color, fg=fg_color)
-label_time.pack(side=tk.LEFT, padx=5, pady=5)
+time_label = tk.Label(time_frame, text="跑步时长 (分钟):", font=default_font, bg=bg_color, fg=fg_color)
+time_label.pack(side=tk.LEFT, padx=5, pady=3)
 
-run_time_entry = ttk.Spinbox(frame_time, width=5, textvariable=default_running_time, font=default_font)
-run_time_entry.pack(side=tk.LEFT, padx=5, pady=5)
-default_running_time.set('59')
-
-frame_buttons = tk.Frame(root, bg=bg_color)
-frame_buttons.grid(row=6, column=0, padx=5, pady=5)
+run_time_entry = ttk.Spinbox(time_frame, width=5, textvariable=default_run_time, font=default_font, from_=30, to=100, increment=10)
+run_time_entry.pack(side=tk.LEFT, padx=5, pady=3)
 
 # 提交按钮
-button_run = ttk.Button(frame_buttons, text="RUN", command=post_new_run_record_thread, style='TButton')
-button_run.pack(side=tk.LEFT, padx=5)
+button_run = ttk.Button(root, width=10, text="立即提交", command=post_new_run_record_thread, style='TButton')
+button_run.grid(row=7, column=0, padx=5, pady=5)
 
 # 结果显示
-result_text = tk.Text(root, height=8, width=35, font=result_font, bg=result_bg_color, fg=result_font_color,
-                      relief="solid")
-result_text.grid(row=7, column=0, padx=10, pady=5)
-
-# 关于
-label_about_info = tk.Label(root, text="@yanyaoli", font=default_font, bg=bg_color, fg=fg_color)
-label_about_info.grid(row=8, column=0, padx=5)
-
-# 其他初始化操作...
+result_text = tk.Text(root, height=6, width=35, font=result_font, bg=bg_color, fg=fg_color, relief='solid')
+result_text.grid(row=8, column=0, padx=10, pady=10)
 
 if __name__ == '__main__':
     load_info_thread()

@@ -73,7 +73,7 @@ def new_run_record(runDistance, runTime, map_choice):
         msg = data["msg"]
         if data["code"] == 10000:
             resultDesc = data["response"]["resultDesc"]
-            result = f"跑步里程：{runDistance}米\n跑步时长：{runTime}分钟\n跑步速度：{average:.2f}公里/分钟\n地图选择：{map_choice}\n跑步结果：{resultDesc}"
+            result = f"跑步速度：{average:.2f}分钟/公里\n跑步结果：{resultDesc}"
             return result
         else:
             return msg
