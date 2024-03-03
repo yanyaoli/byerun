@@ -1,0 +1,5 @@
+venv/
+dist/
+build/
+.history/
+unirun.spec
