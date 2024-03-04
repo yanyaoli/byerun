@@ -3,3 +3,4 @@ dist/
 build/
 .history/
 unirun.spec
+user_data.json

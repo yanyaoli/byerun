@@ -164,12 +164,12 @@ def show_about_info(event):
     about_info_window.resizable(False, False)
     about_info_window.iconbitmap('tmp.ico')
 
-    about_info_label = tk.Label(about_info_window, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
+    about_info_label = tk.Label(about_info_window, text="Unirun Helper", font=title_font, bg=bg_color, fg=fg_color)
     about_info_label.pack(padx=5, pady=5)
 
-    about_info_text = tk.Text(about_info_window, height=4, width=40, font=('思源黑体', 16), fg=fg_color, relief="solid", bd=0)
+    about_info_text = tk.Text(about_info_window, height=5, width=40, font=('思源黑体', 16), fg=fg_color, relief="solid", bd=0)
     about_info_text.pack(padx=10, pady=5)
-    about_info_text.insert(tk.END, "UNIRUN·校园跑助手\n""Developer: yanyaoli\n""Repo: github.com/yanyaoli/unirun")
+    about_info_text.insert(tk.END, "Version：1.2.0\nDeveloper: yanyaoli\nRepo: github.com/yanyaoli/unirun\n")
     about_info_text.config(state="disabled")
 
 label_title = tk.Label(root, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
@@ -206,35 +206,12 @@ login_button = tk.Button(root, textvariable=login_status, bg=button_bg_color, fg
 login_button.grid(row=3, column=0, padx=5)
 
 
-# 地图选择
-map_frame = tk.Frame(root, bg=bg_color)
-map_frame.grid(row=4, column=0, padx=5)
-
-map_label = tk.Label(map_frame, text="地图选择:", font=default_font, bg=bg_color, fg=fg_color)
-map_label.pack(side=tk.LEFT, padx=5)
-
-map_option_menu = ttk.Combobox(map_frame, width=10, font=default_font, state='readonly')
-map_option_menu.pack(side=tk.LEFT, padx=5, pady=5)
-
-map_option_menu['value'] = ('航空港', '龙泉驿')
-map_option_menu.current(1)
-
-def getMapChoice():
-    choice = map_option_menu.get()
-    print(choice)
-    if choice == "航空港":
-        return choice
-    elif choice == "龙泉驿":
-        return choice
-    else:
-        return "龙泉驿"
-
 default_run_time = tk.StringVar(value='59')
 default_run_distance = tk.StringVar(value='4999')
 
 # 跑步距离输入框
 run_distance_frame = tk.Frame(root, bg=bg_color)
-run_distance_frame.grid(row=5, column=0, padx=5, pady=3)
+run_distance_frame.grid(row=4, column=0, padx=5, pady=3)
 
 distance_label = tk.Label(run_distance_frame, text="跑步里程 ( 米 ):", font=default_font, bg=bg_color, fg=fg_color)
 distance_label.pack(side=tk.LEFT, padx=5, pady=3)
@@ -244,13 +221,38 @@ run_distance_entry.pack(side=tk.LEFT, padx=3)
 
 # 跑步时间输入框
 time_frame = tk.Frame(root, bg=bg_color)
-time_frame.grid(row=6, column=0, padx=5, pady=3)
+time_frame.grid(row=5, column=0, padx=5, pady=3)
 
 time_label = tk.Label(time_frame, text="跑步时长 (分钟):", font=default_font, bg=bg_color, fg=fg_color)
 time_label.pack(side=tk.LEFT, padx=5, pady=3)
 
 run_time_entry = ttk.Spinbox(time_frame, width=5, textvariable=default_run_time, font=default_font, from_=30, to=100, increment=10)
 run_time_entry.pack(side=tk.LEFT, padx=5, pady=3)
+
+# 地图选择
+map_frame = tk.Frame(root, bg=bg_color)
+map_frame.grid(row=6, column=0, padx=5)
+
+map_label = tk.Label(map_frame, text="地图选择:", font=default_font, bg=bg_color, fg=fg_color)
+map_label.pack(side=tk.LEFT, padx=5)
+
+map_option_menu = ttk.Combobox(map_frame, background='pink', font=default_font, state='readonly')
+map_option_menu.pack(side=tk.LEFT, padx=5, pady=5)
+
+map_option_menu['value'] = ('成都信息工程大学（航空港校区）', '成都信息工程大学（龙泉校区）' , '成都中医药大学（温江校区）')
+map_option_menu.current(0)
+
+def getMapChoice():
+    choice = map_option_menu.get()
+    print(choice)
+    if choice == "成都信息工程大学（航空港校区）":
+        return 'cuit_hkg'
+    elif choice == "成都信息工程大学（龙泉校区）":
+        return 'cuit_lqy'
+    elif choice == "成都中医药大学（温江校区）":
+        return 'cdutcm_wj'
+    else:
+        return "cuit_lqy"
 
 # 提交按钮
 button_run = ttk.Button(root, width=10, text="立即提交", command=post_new_run_record_thread, style='TButton')
