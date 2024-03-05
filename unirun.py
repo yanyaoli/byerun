@@ -17,14 +17,22 @@ with open('tmp.ico','wb') as tmp:
     tmp.write(base64.b64decode(Icon().ig))
 
 # Threads
-def logout_thread():
-    threading.Thread(target=logout).start()
+selected_ids = None
+
+def show_about_info_thread():
+    threading.Thread(target=show_about_info).start()
+
 def post_new_run_record_thread():
-    threading.Thread(target=post_new_run_record).start()
-def load_info_thread():
-    threading.Thread(target=load_info).start()
+    threading.Thread(target=post_new_run_record, args=(selected_ids,)).start()
+
+def load_users_num_thread():
+    threading.Thread(target=load_users_num).start()
+
+def user_center_thread():
+    threading.Thread(target=user_center).start()
 
 root = tk.Tk()
+root.withdraw()
 root.title("校园跑助手")
 
 screen_width = root.winfo_screenwidth()
@@ -34,8 +42,9 @@ window_height = 450
 position_top = int(screen_height / 2 - window_height / 2)
 position_right = int(screen_width / 2 - window_width / 2)
 root.geometry(f"{window_width}x{window_height}+{position_right}+{position_top}")
-
 root.resizable(False, False)
+root.iconbitmap('tmp.ico')
+
 
 style = ttk.Style()
 style.theme_use('clam')
@@ -50,107 +59,9 @@ button_bg_color = "#FF5F01"
 button_fg_color = "white"
 
 style.configure('TButton', font=button_font, foreground=button_fg_color, background=button_bg_color, relief='flat')
-
 root.configure(bg=bg_color)
-root.iconbitmap('tmp.ico')
 
-# 登录窗口
-def show_login_window():
-    login_window = tk.Toplevel(root, bg=bg_color)
-    login_screen_width = login_window.winfo_screenwidth()
-    login_screen_height = login_window.winfo_screenheight()
-    login_window_width = 300
-    login_window_height = 200
-    login_position_top = int(login_screen_height / 2 - login_window_height / 2)
-    login_position_right = int(login_screen_width / 2 - login_window_width / 2)
-    login_window.geometry(f"{login_window_width}x{login_window_height}+{login_position_right}+{login_position_top}")
-    login_window.resizable(False, False)
-    login_window.iconbitmap('tmp.ico')
-
-    login_title_label = tk.Label(login_window,text="账号登录", font=title_font, bg=bg_color, fg="#FF5F01")
-    login_title_label.pack(padx=10, pady=10)
-
-    phone_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
-    phone_entry.pack(padx=5, pady=5)
-
-    password_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
-    password_entry.pack(padx=5, pady=5)
-
-    def clear_placeholder(event):
-        event.widget.delete(0, tk.END)
-
-    def add_placeholder(event):
-        if event.widget.get() == '':
-            event.widget.insert(0, event.widget.placeholder)
-
-    phone_entry.placeholder = "请输入手机号码"
-    phone_entry.insert(0, phone_entry.placeholder)
-    phone_entry.bind("<FocusIn>", clear_placeholder)
-    phone_entry.bind("<FocusOut>", add_placeholder)
-
-    password_entry.placeholder = "请输入密码"
-    password_entry.insert(0, password_entry.placeholder)
-    password_entry.bind("<FocusIn>", clear_placeholder)
-    password_entry.bind("<FocusOut>", add_placeholder)
-
-    def run_login():
-        phone = phone_entry.get()
-        password = password_entry.get()
-        threading.Thread(target=login, args=(phone, password)).start()
-        if login(phone, password):
-            login_window.destroy()
-            load_info_thread()
-            return True
-        else:
-            messagebox.showerror("校园跑助手", "登录失败，请检查手机号和密码是否正确")
-            return False
-
-    login_button = ttk.Button(login_window, text="登录", command=run_login, style='TButton')
-    login_button.pack(padx=5, pady=10)
-
-def toggle_login():
-    if login_status.get() == "立即登录":
-        show_login_window()
-    else:
-        logout_thread()
-
-def logout():
-    with open('user_data.json', 'w') as f:
-        json.dump({}, f)
-    if check_login_status() == False:
-        userInfo.set('用户未登录')
-        login_status.set("立即登录")
-        userJoinNum.set('账号已退出\n请重新登录')
-    else:
-        data = load_data()
-        studentName = data.get('studentName')
-        userInfo.set(f'{studentName}')
-
-        token = load_data().get('token')
-        user_join_num = get_join_num(token)
-        userJoinNum.set(f'{user_join_num}')
-        login_status.set("退出登录")
-
-# 新增跑步记录
-def post_new_run_record():
-    result_text.config(state="normal")
-    result_text.delete(1.0, tk.END)
-    runDistance = int(run_distance_entry.get())
-    runTime = int(run_time_entry.get())
-    map_choice = getMapChoice()
-    if runDistance <= 0 or runTime <= 0:
-        result_text.insert(tk.END, "请输入有效的跑步距离和时间。\n")
-        result_text.config(state="disabled")
-        return
-    try:
-        result = new_run_record(runDistance, runTime, map_choice)
-        result_text.insert(tk.END, result)
-        load_info_thread()
-        result_text.config(state="disabled")
-    except ValueError as e:
-        result_text.insert(tk.END, f"运行时发生错误：{e}\n")
-        result_text.config(state="disabled")
-
+# 关于信息
 def show_about_info(event):
     about_info_window = tk.Toplevel(root, bg=bg_color)
     about_info_window.title("校园跑助手")
@@ -164,54 +75,239 @@ def show_about_info(event):
     about_info_window.resizable(False, False)
     about_info_window.iconbitmap('tmp.ico')
 
-    about_info_label = tk.Label(about_info_window, text="Unirun Helper", font=title_font, bg=bg_color, fg=fg_color)
+    about_info_label = tk.Label(about_info_window, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
     about_info_label.pack(padx=5, pady=5)
 
-    about_info_text = tk.Text(about_info_window, height=5, width=40, font=('思源黑体', 16), fg=fg_color, relief="solid", bd=0)
+    about_info_text = tk.Text(about_info_window, height=4, width=40, font=('思源黑体', 16), fg=fg_color, relief="solid", bd=0)
     about_info_text.pack(padx=10, pady=5)
-    about_info_text.insert(tk.END, "Version：1.2.0\nDeveloper: yanyaoli\nRepo: github.com/yanyaoli/unirun\n")
+    about_info_text.insert(tk.END, "UNIRUN·校园跑助手\n""Developer: yanyaoli\n""Repo: github.com/yanyaoli/unirun")
     about_info_text.config(state="disabled")
 
+# 标题
 label_title = tk.Label(root, text="校园跑助手", font=title_font, bg=bg_color, fg=fg_color)
-label_title.bind("<Button-1>", show_about_info)
+label_title.bind("<Button-1>", show_about_info_thread)
 label_title.grid(row=0, column=0, padx=10, pady=10)
 
+# 账号数量
+def load_users_num():
+    users_data = load_data()
+    valid_users = 0
+    for user_data in users_data:
+        token = user_data.get('data').get('token')
+        if check_login_status(token):
+            valid_users += 1
+    usersNum.set(f"已登录用户：{valid_users}人")
+    return valid_users
 
-# 加载用户数据
-def load_info():
-    if check_login_status() == False:
-        userInfo.set('用户未登录')
-        login_status.set("立即登录")
-        userJoinNum.set('数据加载失败\n请检查账号状态')
-    else:
-        data = load_data()
-        studentName = data.get('studentName')
-        userInfo.set(f'{studentName}')
+usersNum = tk.StringVar(value="正在加载")
+usersNum_label = tk.Label(root, textvariable=usersNum, font=default_font, bg=bg_color, fg=fg_color)
+usersNum_label.grid(row=1, column=0, padx=5)
 
-        token = load_data().get('token')
-        user_join_num = get_join_num(token)
-        userJoinNum.set(f'{user_join_num}')
-        login_status.set("退出登录")
+# 用户中心
+def user_center():
+    global tree
+    user_center_window = tk.Toplevel(root, bg=bg_color)
 
-userInfo = tk.StringVar(value="正在加载")
-user_info_label = tk.Label(root, textvariable=userInfo, font=default_font, bg=bg_color, fg=fg_color)
-user_info_label.grid(row=1, column=0, padx=5)
+    user_center_window_screen_width = user_center_window.winfo_screenwidth()
+    user_center_window_screen_height = user_center_window.winfo_screenheight()
+    user_center_window_width = 450
+    user_center_window_height = 350
+    user_center_window_position_top = int(user_center_window_screen_height / 2 - user_center_window_height / 2)
+    user_center_window_position_right = int(user_center_window_screen_width / 2 - user_center_window_width / 2)
+    user_center_window.geometry(f"{user_center_window_width}x{user_center_window_height}+{user_center_window_position_right}+{user_center_window_position_top}")
 
-userJoinNum = tk.StringVar(value="正在加载\n......")
-user_join_num_label = tk.Label(root, textvariable=userJoinNum, font=default_font, bg=bg_color, fg=fg_color)
-user_join_num_label.grid(row=2, column=0, padx=5, pady=5)
+    user_center_window.withdraw()
+    root.update()
+    user_center_window.deiconify()
 
-login_status = tk.StringVar(value="立即登录")
-login_button = tk.Button(root, textvariable=login_status, bg=button_bg_color, fg=button_fg_color, font=('思源黑体', 10), command=toggle_login, relief='flat')
-login_button.grid(row=3, column=0, padx=5)
+    user_center_window.transient(root)
+    user_center_window.grab_set()
+    user_center_window.title("校园跑助手")
+    user_center_window.iconbitmap('tmp.ico')
+    user_center_window.resizable(False, False)
 
 
+    user_center_label = tk.Label(user_center_window, text="账号管理", font=title_font, bg=bg_color, fg=fg_color)
+    user_center_label.pack(padx=5, pady=5)
+
+    tree = ttk.Treeview(user_center_window, columns=('id', 'studentName', 'studentInfo'), show='headings')
+    tree.column('id', width=50)
+    tree.heading('id', text='序号')
+    tree.column('studentName', width=100)
+    tree.heading('studentName', text='姓名')
+    tree.column('studentInfo', width=250)
+    tree.heading('studentInfo', text='状态信息')
+    tree.pack(expand=True, fill='both')
+
+    def disable_close():
+        user_center_window.protocol("WM_DELETE_WINDOW", lambda: None)
+    def enable_close():
+        user_center_window.protocol("WM_DELETE_WINDOW", user_center_window.destroy)
+
+    # 更新用户列表
+    def update_user_list():
+        disable_close()
+        for item in tree.get_children():
+            tree.delete(item)
+
+        users_data = load_data()
+        for user_data in users_data:
+            token = user_data.get('data').get('token')
+            schoolId = user_data.get('data').get('schoolId')
+            studentId = user_data.get('data').get('studentId')
+            id = user_data.get('id')
+            studentName = user_data.get('data').get('studentName')
+            studentInfo = str(get_join_num(token, schoolId, studentId))
+            tree.insert('', 'end', values=(id, studentName, studentInfo))
+        enable_close()
+
+    def update_user_list_thread():
+        threading.Thread(target=update_user_list).start()
+    update_user_list_thread()
+
+    # 全选反选
+    def toggle_select_all():
+        items = tree.get_children()
+
+        if set(items) == set(tree.selection()):
+            tree.selection_remove(items)
+            select_all_button.config(text="全选")
+        else:
+            tree.selection_set(items)
+            select_all_button.config(text="反选")
+
+    # 添加用户
+    def add_user():
+        threading.Thread(target=show_login_window).start()
+
+    # 删除用户
+    def delete_user():
+        selected_items = tree.selection()
+        users_data = load_data()
+        for item in selected_items:
+            item_values = tree.item(item, "values")
+            id_value = int(item_values[0])  # 转换为整数
+            for user_data in users_data:
+                if int(user_data.get('id')) == id_value:  # 转换为整数
+                    users_data.remove(user_data)
+                    break
+            tree.delete(item)
+        with open('user_data.json', 'w', encoding='utf-8') as f:
+            json.dump(users_data, f)
+        update_user_list_thread()
+
+    # 确认选择
+    def confirm_selection():
+        global selected_ids
+        selected_items = tree.selection()
+        selected_ids = []
+        for item in selected_items:
+            item_values = tree.item(item, "values")
+            id_value = item_values[0]
+            selected_ids.append(id_value)
+        user_center_window.destroy()
+        usersNum.set(f"已选择用户：{len(selected_ids)}人")
+        return selected_ids
+
+    # Threads
+    def delete_user_thread():
+        threading.Thread(target=delete_user).start()
+
+    def confirm_selection_thread():
+        threading.Thread(target=confirm_selection).start()
+
+    button_frame = tk.Frame(user_center_window, bg=bg_color)
+    button_frame.pack(pady=5)
+
+    delete_button = ttk.Button(button_frame, text="删除用户", command=delete_user_thread, width=8, style='TButton')
+    delete_button.grid(row=0, column=0, padx=5)
+
+    add_button = ttk.Button(button_frame, text="添加用户", command=add_user, width=8, style='TButton')
+    add_button.grid(row=0, column=1, padx=5)
+
+    select_all_button = ttk.Button(button_frame, text="全选", command=toggle_select_all, width=8, style='TButton')
+    select_all_button.grid(row=0, column=2, padx=5)
+
+    confirm_button = ttk.Button(button_frame, text="确定", command=confirm_selection_thread, width=8, style='TButton')
+    confirm_button.grid(row=0, column=3, padx=5)
+
+    # 登录窗口
+    def show_login_window():
+        login_window = tk.Toplevel(user_center_window, bg=bg_color)
+
+        login_window_screen_width = login_window.winfo_screenwidth()
+        login_window_screen_height = login_window.winfo_screenheight()
+        login_window_width = 300
+        login_window_height = 200
+        login_position_top = int(login_window_screen_height / 2 - login_window_height / 2)
+        login_position_right = int(login_window_screen_width / 2 - login_window_width / 2)
+        login_window.geometry(f"{login_window_width}x{login_window_height}+{login_position_right}+{login_position_top}")
+
+        login_window.withdraw()
+        user_center_window.update()
+        login_window.deiconify()
+
+        login_window.transient(user_center_window)
+        login_window.grab_set()
+        login_window.title("校园跑助手")
+        login_window.iconbitmap('tmp.ico')  # 如果没有图标文件，可以暂时注释掉
+        login_window.resizable(False, False)
+
+
+        login_title_label = tk.Label(login_window,text="账号登录", font=title_font, bg=bg_color, fg="#FF5F01")
+        login_title_label.pack(padx=10, pady=10)
+
+        phone_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
+        phone_entry.pack(padx=5, pady=5)
+
+        password_entry = tk.Entry(login_window, width=20, font=default_font, relief="solid", borderwidth=1, bg=bg_color, fg=fg_color)
+        password_entry.pack(padx=5, pady=5)
+
+        def clear_placeholder(event):
+            if event.widget.get() == event.widget.placeholder:
+                event.widget.delete(0, tk.END)
+
+        def add_placeholder(event):
+            if event.widget.get() == '':
+                event.widget.insert(0, event.widget.placeholder)
+
+        phone_entry.placeholder = "请输入手机号码"
+        phone_entry.insert(0, phone_entry.placeholder)
+        phone_entry.bind("<FocusIn>", clear_placeholder)
+        phone_entry.bind("<FocusOut>", add_placeholder)
+
+        password_entry.placeholder = "请输入密码"
+        password_entry.insert(0, password_entry.placeholder)
+        password_entry.bind("<FocusIn>", clear_placeholder)
+        password_entry.bind("<FocusOut>", add_placeholder)
+
+        def run_login():
+            phone = phone_entry.get()
+            password = password_entry.get()
+            threading.Thread(target=login, args=(phone, password)).start()
+            if login(phone, password):
+                login_window.destroy()
+                load_users_num_thread()
+                update_user_list_thread()
+                return True
+            else:
+                messagebox.showerror("校园跑助手", "登录失败，请检查手机号和密码是否正确")
+                return False
+
+        login_button = ttk.Button(login_window, text="登录", command=run_login, style='TButton')
+        login_button.pack(padx=5, pady=10)
+
+# 账号管理
+button_run = ttk.Button(root, width=10, text="账号管理", command=user_center_thread, style='TButton')
+button_run.grid(row=2, column=0, padx=5, pady=5)
+
+# 默认跑步时长和里程
 default_run_time = tk.StringVar(value='59')
 default_run_distance = tk.StringVar(value='4999')
 
-# 跑步距离输入框
+# 跑步里程输入框
 run_distance_frame = tk.Frame(root, bg=bg_color)
-run_distance_frame.grid(row=4, column=0, padx=5, pady=3)
+run_distance_frame.grid(row=3, column=0, padx=5, pady=3)
 
 distance_label = tk.Label(run_distance_frame, text="跑步里程 ( 米 ):", font=default_font, bg=bg_color, fg=fg_color)
 distance_label.pack(side=tk.LEFT, padx=5, pady=3)
@@ -219,9 +315,9 @@ distance_label.pack(side=tk.LEFT, padx=5, pady=3)
 run_distance_entry = ttk.Spinbox(run_distance_frame, width=5, textvariable=default_run_distance, font=default_font, from_=1, to=5000, increment=99)
 run_distance_entry.pack(side=tk.LEFT, padx=3)
 
-# 跑步时间输入框
+# 跑步时长输入框
 time_frame = tk.Frame(root, bg=bg_color)
-time_frame.grid(row=5, column=0, padx=5, pady=3)
+time_frame.grid(row=4, column=0, padx=5, pady=3)
 
 time_label = tk.Label(time_frame, text="跑步时长 (分钟):", font=default_font, bg=bg_color, fg=fg_color)
 time_label.pack(side=tk.LEFT, padx=5, pady=3)
@@ -231,7 +327,7 @@ run_time_entry.pack(side=tk.LEFT, padx=5, pady=3)
 
 # 地图选择
 map_frame = tk.Frame(root, bg=bg_color)
-map_frame.grid(row=6, column=0, padx=5)
+map_frame.grid(row=5, column=0, padx=5)
 
 map_label = tk.Label(map_frame, text="地图选择:", font=default_font, bg=bg_color, fg=fg_color)
 map_label.pack(side=tk.LEFT, padx=5)
@@ -254,14 +350,44 @@ def getMapChoice():
     else:
         return "cuit_lqy"
 
+# 新增跑步记录
+def post_new_run_record(selected_ids):
+    global result_text
+    result_text.config(state="normal")
+    result_text.delete(1.0, tk.END)
+    runDistance = int(run_distance_entry.get())
+    runTime = int(run_time_entry.get())
+    map_choice = getMapChoice()
+    if runDistance <= 0 or runTime <= 0:
+        result_text.insert(tk.END, "请输入有效的跑步里程和时长。\n")
+        result_text.config(state="disabled")
+        return
+    try:
+        users_data = load_data()
+        selected_ids = selected_ids
+        if not selected_ids:
+            user_tokens_and_ids = [(user_data.get('data').get('token'), user_data.get('id'), user_data.get('data').get('studentName'), user_data.get('data').get('schoolId')) for user_data in users_data]
+        else:
+            user_tokens_and_ids = [(user_data.get('data').get('token'), user_data.get('id'), user_data.get('data').get('studentName'), user_data.get('data').get('schoolId')) for user_data in users_data if str(user_data.get('id')) in selected_ids]
+        for token, userId, studentName, schoolId in user_tokens_and_ids:
+            result = new_run_record(runDistance, runTime, map_choice, token, userId, studentName, schoolId)
+            result_text.insert(tk.END, result)
+        load_users_num_thread()
+        result_text.config(state="disabled")
+    except ValueError as e:
+        result_text.insert(tk.END, f"运行时发生错误：{e}\n")
+        result_text.config(state="disabled")
+
 # 提交按钮
 button_run = ttk.Button(root, width=10, text="立即提交", command=post_new_run_record_thread, style='TButton')
-button_run.grid(row=7, column=0, padx=5, pady=5)
+button_run.grid(row=6, column=0, padx=5, pady=5)
 
 # 结果显示
-result_text = tk.Text(root, height=6, width=35, font=result_font, bg=bg_color, fg=fg_color, relief='solid')
-result_text.grid(row=8, column=0, padx=10, pady=10)
+result_text = tk.Text(root, height=7, width=35, font=result_font, bg=bg_color, fg=fg_color, relief='solid')
+result_text.grid(row=7, column=0, padx=10, pady=10)
+
+root.deiconify()
 
 if __name__ == '__main__':
-    load_info_thread()
+    load_users_num_thread()
     root.mainloop()

@@ -2,5 +2,7 @@ venv/
 dist/
 build/
 .history/
+tmp.ico
 unirun.spec
+unirun32.spec
 user_data.json

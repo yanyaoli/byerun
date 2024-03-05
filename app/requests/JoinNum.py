@@ -1,13 +1,9 @@
 import requests
 from app.AppConfig import HOST, APPKEY, CONTENTTYPE, USERAGENT
-from app.SaveUserData import load_data
 from utils.SignUtil import get_sign
 
-def get_join_num(token):
-    data = load_data()
-    token = data.get('token')
-    schoolId = data.get('schoolId')
-    studentId = data.get('studentId')
+def get_join_num(token, schoolId, studentId):
+
     query = {
         "schoolId": schoolId,
         "studentId": studentId
@@ -26,7 +22,7 @@ def get_join_num(token):
         joinNum = data["response"]["joinNum"]
         runTotalNum = data["response"]["runTotalNum"]
         runJoinNum = data["response"]["runJoinNum"]
-        result = f'俱乐部完成率：{joinNum}/{totalNum}次\n校园跑完成率：{runJoinNum}/{runTotalNum}次'
+        result = f'俱乐部完成率：{joinNum}/{totalNum}次  校园跑完成率：{runJoinNum}/{runTotalNum}次'
         return result
     else:
         msg = data["msg"]

@@ -1,7 +1,7 @@
 import requests
 import json
 from app.AppConfig import APPKEY, HOST, APPVERSION, BRAND, DEVICETOKEN, DEVICETYPE, MOBILETYPE, SYSVERSION, CONTENTTYPE, USERAGENT
-from app.SaveUserData import save_data, load_data
+from app.SaveUserData import save_data
 from utils.Md5Util import *
 from utils.SignUtil import *
 
@@ -37,30 +37,21 @@ def login(phone, password):
     else:
         return False
 
-def check_login_status():
-    data = load_data()
+def check_login_status(token):
     logged = False
-    if data and data != {}:
-        token = data.get("token")
-        if token is not None:
-            headers = {
-                "token": token,
-                "appKey": APPKEY,
-                "sign": get_sign(None,None),
-                "Content-Type": CONTENTTYPE,
-                "User-Agent": USERAGENT
-            }
-            response = requests.get(HOST + "v1/auth/query/token", headers=headers)
-            data = response.json()
-            if data["code"] == 10000:
-                logged = True
-                return logged
-            else:
-                logged = False
-                return logged
-        else:
-            logged = False
-            return logged
+
+    headers = {
+        "token": token,
+        "appKey": APPKEY,
+        "sign": get_sign(None,None),
+        "Content-Type": CONTENTTYPE,
+        "User-Agent": USERAGENT
+    }
+    response = requests.get(HOST + "v1/auth/query/token", headers=headers)
+    data = response.json()
+
+    if data["code"] == 10000:
+        logged = True
+        return logged
     else:
-        logged = False
         return logged

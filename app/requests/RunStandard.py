@@ -1,18 +1,13 @@
 import requests
 from app.AppConfig import HOST, APPKEY, CONTENTTYPE, USERAGENT
-from app.SaveUserData import load_data
 from utils.SignUtil import get_sign
 from app.Login import check_login_status
 
 
-def query_run_standard(token):
-    global sign
-    if check_login_status() == False:
+def query_run_standard(token, schoolId):
+    if check_login_status(token) == False:
         return None, None, None, None, None
     else:
-        data = load_data()
-        schoolId = data.get('schoolId')
-        token = data.get('token')
         query = {
             "schoolId": schoolId
         }
@@ -24,7 +19,6 @@ def query_run_standard(token):
             "Content-Type": CONTENTTYPE,
             "User-Agent": USERAGENT
         }
-        print(headers)
         response = requests.get(HOST + "v1/unirun/query/runStandard", headers=headers, params=query)
         data = response.json()
         msg = data["msg"]

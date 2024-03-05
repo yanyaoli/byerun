@@ -31,16 +31,13 @@ def check_speed(runDistance, runTime):
         print(f"平均配速：{average:.2f} 分钟/公里")
     return average
 
-def new_run_record(runDistance, runTime, map_choice):
+def new_run_record(runDistance, runTime, map_choice, token, userId, studentName, schoolId):
     average = check_speed(runDistance, runTime)
     if average < 6:
         notice = "速度过快，已停止执行后续请求"
         return notice
     else:
-        data = load_data()
-        userId = data.get('userId')
-        token = data.get('token')
-        semesterYear = query_run_standard(token)[-1]
+        semesterYear = query_run_standard(token, schoolId)[-1]
 
         body = {
             "againRunStatus": "0",
@@ -73,7 +70,7 @@ def new_run_record(runDistance, runTime, map_choice):
         msg = data["msg"]
         if data["code"] == 10000:
             resultDesc = data["response"]["resultDesc"]
-            result = f"跑步速度：{average:.2f}分钟/公里\n跑步结果：{resultDesc}"
+            result = f"{studentName}: 跑步速度：{average:.2f}分钟/公里 跑步结果：{resultDesc}\n"
             return result
         else:
             return msg
