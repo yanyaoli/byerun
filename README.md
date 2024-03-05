@@ -16,9 +16,8 @@
 UNIRUN校园跑辅助工具，自动规划跑步路径，提交跑步记录，跑步里程与时长已设置阈值，安全可靠，但不排除学校存在其他检测方法，如使用本工具造成的任何问题请自行承担。
 
 <div style="display: flex;">
-    <img src='./files/main.jpg' style="width: 100%; height: auto;">
-    <img src='./files/manage.jpg' style="width: 100%; height: auto;">
-    <img src='./files/login.png' style="width: 100%; height: auto;">
+    <img src='./files/main.jpg' style="width: 50%; height: auto;">
+    <img src='./files/manage.jpg' style="width: 50%; height: auto;">
 </div>
 
 | 地图支持                    |
