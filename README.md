@@ -2,9 +2,10 @@
   Unirun Helper | 校园跑助手
 </h1>
 
-<p align='center'>
- 校园跑辅助工具，为了你的健康，不提倡长期使用
-</p>
+<div align='center'>
+  <a href='https://github.com/yanyaoli/byerun-web' >请移步网页版项目，持续更新</a>
+  <p>校园跑辅助工具，为了你的健康，不提倡长期使用</p>
+</div>
 
 <div align='center'>
   <img src="./files/logo.png" width=100px height=100px>
@@ -84,7 +85,7 @@ def MapName():
 
 ### 直接使用打包好的程序
 
-进入[发布页面](https://github.com/yanyaoli/unirun/releases/)，下载最新发布的可执行程序
+进入[发布页面](https://github.com/yanyaoli/byerun/releases/)，下载最新发布的可执行程序
 
 
 ### 本地构建
@@ -95,7 +96,7 @@ def MapName():
 
 ```shell
 cd unirun
-git clone https://github.com/yanyaoli/unirun.git
+git clone https://github.com/yanyaoli/byerun.git
 ```
 
 **依赖安装**
@@ -114,7 +115,7 @@ python unirun.py
 ## 特别鸣谢
 
 <p align='center'>
-  <a href="https://github.com/yanyaoli/unirun/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=yanyaoli/unirun">
+  <a href="https://github.com/yanyaoli/byerun/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=yanyaoli/byerun">
   </a>
 </p>
